@@ -3,8 +3,6 @@
         <style type="text/css">
             .circle {
                 background-color: black;
-                width: 50px;
-                height: 50px;
                 -webkit-border-radius: 25px;
                 -moz-border-radius: 25px;
                 border-radius: 25px;
@@ -13,11 +11,22 @@
         </style>
     </head>
     <body onload="onLoadEvent()">
-        <div id="status"></div>
+        <fieldset style="width:100px;"><legend>status</legend>
+            <div id="status"></div>
+        </fieldset>
+        <fieldset style="width:400px;"><legend>gesture</legend>
+            <textarea id="gestureConsole" style="width:100%; height:100px;"></textarea>
+        </fieldset>
+        <fieldset style="width:100px;"><legend>pushing</legend>
+            <div id="toPush"></div>
+        </fieldset>
         <script src="d3.js" charset="UTF-8"></script>
         <script src="leap.js"></script>
         <script src="leapController.js"></script>
         <script src="pdollar.js"></script>
+        <script src="ndollar.js"></script>
         <script src="recog.js"></script>
     </body>
 </html>
+
+

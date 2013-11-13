@@ -5,7 +5,7 @@ var _isDown, _points, _strokeID, _r, _g, _rc; // global variables
 function onLoadEvent() {
   _points = new Array(); // point array for current stroke
   _strokeID = 0;
-  _r = new PDollarRecognizer();
+  //_r = new PDollarRecognizer();
   _isDown = false;
 }
 function getCanvasRect(canvas) {
@@ -135,25 +135,31 @@ function onClickClearStrokes() {
   drawText("Canvas cleared.");
 }
 
-
+//var recognizer = new NDollarRecognizer(true);
+var recognizer = new PDollarRecognizer();
 var windowLimit = 200;
+var recogInterval = windowLimit / 40;
+var gestureScoreBar = 0.0;
+var circleRadius = 10;
 
 (function() {
     for(var i=0;i<windowLimit;i++) {
         var c = document.createElement('div');
         c.id = 'circle_'+i;
         c.setAttribute('class', 'circle');
+        c.style.width=circleRadius+'px';
+        c.style.height=circleRadius+'px';
         document.body.appendChild(c);
     }
 })();
 
 function positionCircle(id, x, y) {
     var c = document.getElementById('circle_'+id);
-    c.style.left = x-25;
-    c.style.top = y-25;
+    c.style.left = x-circleRadius;
+    c.style.top = y-circleRadius;
 }
 
-onNewFrame(function updateSnake(tip) {
+var recog = function recog(tip) {
     var status = "";
     if (tip) {
         var x=Math.round(tip[0]);
@@ -161,21 +167,10 @@ onNewFrame(function updateSnake(tip) {
         var z=Math.round(tip[2]);
         var status = x+'<br>'+y+'<br>'+z;
         var screenPos = leap2screen(tip);
-        positionCircle(updateSnake.frame!=null?(updateSnake.frame++)%windowLimit:updateSnake.frame=0, screenPos[0], screenPos[1]);
-    } else {
-        status = 'no pointable';
-    }
-    document.getElementById('status').innerHTML = status;
-});
-
-var recognizer = new PDollarRecognizer();
-onNewFrame(function recog(tip) {
-    var recogInterval = windowLimit / 5;
-    if(tip) {
-        if(recog.window === undefined) {
-            recog.window = [];
-        }
-        recog.window.push({X:tip[0], Y:tip[1], ID:1});
+        positionCircle(recog.frame!=null?(recog.frame++)%windowLimit:recog.frame=0, screenPos[0], screenPos[1]);
+        var toPush = {X:Math.round(screenPos[0]), Y:Math.round(-screenPos[1]), ID:1};
+        document.getElementById('toPush').innerHTML = JSON.stringify(toPush);
+        recog.window.push(toPush);
         if(recog.window.length > windowLimit) {
             recog.window.shift();
             if(recog.sinceLastRecog === undefined) {
@@ -184,9 +179,23 @@ onNewFrame(function recog(tip) {
             recog.sinceLastRecog++;
             if(recog.sinceLastRecog > recogInterval) {
                 recog.sinceLastRecog = 0;
-                var result = recognizer.Recognize(recog.window);
-                console.log(result);
+                //var result = recognizer.Recognize([recog.window.slice(0)], true, false, true); //ndollar
+                var result = recognizer.Recognize(recog.window.slice(0));
+                if(result.Score > gestureScoreBar) {
+                    var gConsole = document.getElementById('gestureConsole');
+                    gConsole.value +='\r'+JSON.stringify(result);
+                    gConsole.scrollTop = gConsole.scrollHeight;
+                    //recog.window = [];
+                }
             }
         }
+    } else {
+        status = 'no pointable';
     }
-});
+    document.getElementById('status').innerHTML = status;
+};
+recog.window = [];
+
+
+onNewFrame(recog);
+
