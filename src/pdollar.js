@@ -358,6 +358,9 @@ function PathLength(points) // length traversed by a point path
 }
 function Distance(p1, p2) // Euclidean distance between two points
 {
+    if(p1 == null || p2 == null) {
+        debugger;
+    }
     var dx = p2.X - p1.X;
     var dy = p2.Y - p1.Y;
     return Math.sqrt(dx * dx + dy * dy);

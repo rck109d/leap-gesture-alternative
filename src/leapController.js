@@ -40,10 +40,10 @@ var displayMetrics = { // an object which provides window metrics and caches res
     svgCTMinverse: null,
     get: function() {
         var now = Date.now();
-        if(this.stateAge == null || now > this.stateAge + 1000) {
+        if(!this.stateAge || now > this.stateAge + 1000) {
             this.stateAge = now;
-            this.width = document.body.clientWidth
-            this.height = document.body.clientHeight
+            this.width = document.body.clientWidth;
+            this.height = document.body.clientHeight;
         }
         return {
             windowBounds: [this.width, this.height]
@@ -99,31 +99,32 @@ function onFingersSpread(f) {
     onFingersSpread.handlers.push(f);
 }
 
+function notifyFingersSpread(bool) {
+    if(onFingersSpread.handlers) {
+        onFingersSpread.handlers.forEach(function(handler) {
+            handler.call(window, bool);
+        });
+    }
+}
+
 /** Called every frame for leap motion */
 function grabNewFrame() {
     var frame = control.frame();
     var oldestPointable = null;
-    
-    if(frame.pointables.length > 3) {
-        if(grabNewFrame.ticksTilSpread === undefined) {
-            grabNewFrame.ticksTilSpread = 50;
+    if(frame.hands.length > 1 && frame.pointables.length > 3) {
+        if(!grabNewFrame.wasSpread) {
+            notifyFingersSpread(true);
+            grabNewFrame.wasSpread = true;
         }
-        grabNewFrame.ticksTilSpread--;
-        if(grabNewFrame.ticksTilSpread === 0) {
-            if(onFingersSpread.handlers) {
-                onFingersSpread.handlers.forEach(function(handler) {
-                    handler.call(window);
-                });
-            }
-        }
-    } else {
-        delete grabNewFrame.ticksTilSpread;
+    } else if(grabNewFrame.wasSpread) {
+        notifyFingersSpread(false);
+        grabNewFrame.wasSpread = false;
     }
     
     frame.pointables.forEach(function(pointable) {
-        if (pointable != null) {
+        if (pointable) {
             var tip = pointable.stabilizedTipPosition.slice(); /// make a copy of tipPosition
-            if(oldestPointable == null || oldestPointable.timeVisible < pointable.timeVisible) {
+            if(!oldestPointable || oldestPointable.timeVisible < pointable.timeVisible) {
                 oldestPointable = pointable;
             }
         }

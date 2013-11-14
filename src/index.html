@@ -8,19 +8,22 @@
                 border-radius: 25px;
                 position: fixed;
             }
+            .pointer {
+                background-color: black;
+                -webkit-border-radius: 25px;
+                -moz-border-radius: 25px;
+                border-radius: 25px;
+                position: fixed;
+            }
         </style>
         <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/jqplot/1.0.8/jquery.jqplot.css">
     </head>
-    <body onload="onLoadEvent()">
+    <body>
         <fieldset style="width:400px;"><legend>gesture</legend>
             <i>lower is stronger</i>
             <div id="countdown"></div>
             <div id="chartdiv" style="height:400px;width:300px; "></div>
         </fieldset>
-        <fieldset style="width:100px;"><legend>pushing</legend>
-            <div id="toPush"></div>
-        </fieldset>
-        
         
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
         <script src="https:////cdn.jsdelivr.net/jqplot/1.0.8/jquery.jqplot.js"></script>
