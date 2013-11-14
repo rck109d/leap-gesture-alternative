@@ -9,24 +9,29 @@
                 position: fixed;
             }
         </style>
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/jqplot/1.0.8/jquery.jqplot.css">
     </head>
     <body onload="onLoadEvent()">
-        <fieldset style="width:100px;"><legend>status</legend>
+        <fieldset style="width:100px;"><legend>Leap</legend>
+            <button id="buttonLeapOn" disabled>On</button>
+            <button id="buttonLeapOff">Off</button>
             <div id="status"></div>
         </fieldset>
         <fieldset style="width:400px;"><legend>gesture</legend>
-            <textarea id="gestureConsole" style="width:100%; height:100px;"></textarea>
+            <i>lower is stronger</i>
+            <div id="chartdiv" style="height:400px;width:300px; "></div>
         </fieldset>
         <fieldset style="width:100px;"><legend>pushing</legend>
             <div id="toPush"></div>
         </fieldset>
+        
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+        <script src="https:////cdn.jsdelivr.net/jqplot/1.0.8/jquery.jqplot.js"></script>
         <script src="d3.js" charset="UTF-8"></script>
         <script src="leap.js"></script>
         <script src="leapController.js"></script>
         <script src="pdollar.js"></script>
-        <script src="ndollar.js"></script>
         <script src="recog.js"></script>
     </body>
 </html>
-
-

@@ -108,7 +108,7 @@ function PDollarRecognizer() // constructor
     
 	this.PointClouds.push(new PointCloud("N", new Array(
 		new Point(0,100,1),new Point(0,0,1),
-		new Point(100,100,1),new Point(100,0,1)
+		new Point(50,100,1),new Point(50,0,1)
 	)));
 	/*
 	this.PointClouds.push(new PointCloud("F", new Array(
@@ -146,9 +146,11 @@ function PDollarRecognizer() // constructor
 	        new Point(526,221,2)
 	)));
 	*/
+	/*
 	this.PointClouds.push(new PointCloud("line", new Array(
 		new Point(12,347,1),new Point(119,347,1)
 	)));
+	*/
 	/*
 	this.PointClouds.push(new PointCloud("five-point star", new Array(
 		new Point(177,396,1),new Point(223,299,1),new Point(262,396,1),new Point(168,332,1),new Point(278,332,1),new Point(184,397,1)
@@ -179,10 +181,12 @@ function PDollarRecognizer() // constructor
 		new Point(371,486,3),new Point(371,571,3)
 	)));
 	*/
+	/*
 	this.PointClouds.push(new PointCloud("half-note", new Array(
 		new Point(546,465,1),new Point(546,531,1),
 		new Point(540,530,2),new Point(536,529,2),new Point(533,528,2),new Point(529,529,2),new Point(524,530,2),new Point(520,532,2),new Point(515,535,2),new Point(511,539,2),new Point(508,545,2),new Point(506,548,2),new Point(506,554,2),new Point(509,558,2),new Point(512,561,2),new Point(517,564,2),new Point(521,564,2),new Point(527,563,2),new Point(531,560,2),new Point(535,557,2),new Point(538,553,2),new Point(542,548,2),new Point(544,544,2),new Point(546,540,2),new Point(546,536,2)
 	)));
+	*/
 	
 	//
 	// The $P Point-Cloud Recognizer API begins here -- 3 methods: Recognize(), AddGesture(), DeleteUserGestures()

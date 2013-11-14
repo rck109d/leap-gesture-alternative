@@ -141,6 +141,31 @@ var windowLimit = 200;
 var recogInterval = windowLimit / 40;
 var gestureScoreBar = 0.0;
 var circleRadius = 10;
+var leapOn = true;
+var gestureScoreHistories = {}
+$.each(recognizer.PointClouds, function(i, c) {
+    gestureScoreHistories[c.Name] = [];
+});
+var gestureHistoryLimit = 20; // how many history items to keep per gesture
+var plot = null;
+
+
+function addGestureScoreToHistory(name, score) {
+    var h = gestureScoreHistories[name];
+    h.push(score);
+    if(h.length > gestureHistoryLimit) {
+        h.shift();
+    }
+}
+
+function getScoreHistoriesToChart() {
+    var c=[];
+    Object.keys(gestureScoreHistories).forEach(function(k){
+        c.push(gestureScoreHistories[k])
+    });
+    return c;
+}
+
 
 (function() {
     for(var i=0;i<windowLimit;i++) {
@@ -151,7 +176,31 @@ var circleRadius = 10;
         c.style.height=circleRadius+'px';
         document.body.appendChild(c);
     }
+    var buttonHandlers = {
+        'buttonLeapOn': function() {
+            leapOn = true;
+            $('#buttonLeapOn').prop('disabled', true);
+            $('#buttonLeapOff').prop('disabled', false);
+        },
+        'buttonLeapOff': function() {
+            leapOn = false;
+            $('#buttonLeapOn').prop('disabled', false);
+            $('#buttonLeapOff').prop('disabled', true);
+        }
+    }
+    Object.keys(buttonHandlers).forEach(function(key) {
+        $('#'+key).click(buttonHandlers[key]);
+    })
 })();
+
+function positionCirclesForPoints(points, scale, translate) {
+    for(var i=0; i<windowLimit; i++) {
+        positionCircle(i,0,0);
+    }
+    $.each(points, function(i, p) {
+        positionCircle(i,translate+p.X*scale,translate+p.Y*scale);
+    });
+}
 
 function positionCircle(id, x, y) {
     var c = document.getElementById('circle_'+id);
@@ -159,7 +208,16 @@ function positionCircle(id, x, y) {
     c.style.top = y-circleRadius;
 }
 
+function gConsoleAppend(str) {
+    var gConsole = document.getElementById('gestureConsole');
+    gConsole.value += '\r' + str;
+    gConsole.scrollTop = gConsole.scrollHeight;
+}
+
 var recog = function recog(tip) {
+    if(!leapOn) {
+        return
+    }
     var status = "";
     if (tip) {
         var x=Math.round(tip[0]);
@@ -168,8 +226,8 @@ var recog = function recog(tip) {
         var status = x+'<br>'+y+'<br>'+z;
         var screenPos = leap2screen(tip);
         positionCircle(recog.frame!=null?(recog.frame++)%windowLimit:recog.frame=0, screenPos[0], screenPos[1]);
-        var toPush = {X:Math.round(screenPos[0]), Y:Math.round(-screenPos[1]), ID:1};
-        document.getElementById('toPush').innerHTML = JSON.stringify(toPush);
+        var toPush = {X:Math.round(screenPos[0]), Y:Math.round(screenPos[1]), ID:1};
+        $('#toPush').html(JSON.stringify(toPush));
         recog.window.push(toPush);
         if(recog.window.length > windowLimit) {
             recog.window.shift();
@@ -180,6 +238,36 @@ var recog = function recog(tip) {
             if(recog.sinceLastRecog > recogInterval) {
                 recog.sinceLastRecog = 0;
                 //var result = recognizer.Recognize([recog.window.slice(0)], true, false, true); //ndollar
+                
+                var scores = [];
+                $.each(recognizer.PointClouds, function(i,p) {
+                    var cloud = recognizer.PointClouds[i];
+                    var score = GreedyCloudMatch(TranslateTo(Scale(Resample(recog.window.slice(0), 32)), Origin), cloud);
+                    scores.push({name:cloud.Name, score:score});
+                    addGestureScoreToHistory(cloud.Name, score);
+                });
+                //gConsoleAppend(JSON.stringify(scores));
+                
+                
+                if(plot != null) {
+                    plot.destroy();
+                }
+                plot = $.jqplot ('chartdiv', getScoreHistoriesToChart(), {
+                    legend: {
+                        renderer: $.jqplot.EnhancedLegendRenderer,
+                        show:true,
+                        labels:Object.keys(gestureScoreHistories)
+                    }
+                });
+                
+                /*else {
+                    $.each(getScoreHistoriesToChart(), function(i, x) {
+                        plot.series[i].data = x;
+                    });
+                    plot.replot();
+                }*/
+                
+                /*
                 var result = recognizer.Recognize(recog.window.slice(0));
                 if(result.Score > gestureScoreBar) {
                     var gConsole = document.getElementById('gestureConsole');
@@ -187,6 +275,7 @@ var recog = function recog(tip) {
                     gConsole.scrollTop = gConsole.scrollHeight;
                     //recog.window = [];
                 }
+                */
             }
         }
     } else {
