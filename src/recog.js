@@ -137,7 +137,7 @@ function onClickClearStrokes() {
 
 //var recognizer = new NDollarRecognizer(true);
 var recognizer = new PDollarRecognizer();
-var windowLimit = 100;
+var windowLimit = 200;
 var recogInterval = windowLimit / 40;
 var gestureScoreBar = 0.0;
 var circleRadius = 10;
@@ -146,9 +146,9 @@ var gestureScoreHistories = {}
 $.each(recognizer.PointClouds, function(i, c) {
     gestureScoreHistories[c.Name] = [];
 });
-var gestureHistoryLimit = 20; // how many history items to keep per gesture
+var gestureHistoryLimit = 10; // how many history items to keep per gesture
 var plot = null;
-var takingGesture = true;
+var takingGesture = false;
 
 
 function addGestureScoreToHistory(name, score) {
@@ -231,6 +231,27 @@ onNewFrame(function(tip) {
     }
 })
 
+onFingersSpread(function() {
+    for(var i=0;i<windowLimit;i++) {
+        positionCircle(i,0,0);
+    }
+    setTimeout(function() {
+        takingGesture = true;
+    }, 3000);
+    var timeLeft = 3;
+    (function queueNext() {
+        setTimeout(function(){
+            timeLeft -= 0.1;
+            var display = Math.round(timeLeft*10)/10;
+            if(timeLeft > 0) {
+                queueNext();
+                $('#pointer').html(display);
+            } else {
+                $('#pointer').html('')
+            }
+        }, 100);
+    })();
+});
 
 var recog = function recog(tip) {
     if(!leapOn || !takingGesture) {
@@ -276,6 +297,9 @@ var recog = function recog(tip) {
                         labels:Object.keys(gestureScoreHistories)
                     }
                 });
+                
+                takingGesture = false;
+                recog.window=[];
                 
                 /*else {
                     $.each(getScoreHistoriesToChart(), function(i, x) {

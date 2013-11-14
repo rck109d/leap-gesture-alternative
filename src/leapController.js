@@ -92,10 +92,33 @@ function onNewFrame(f) {
     onNewFrame.handlers.push(f);
 }
 
+function onFingersSpread(f) {
+    if(onFingersSpread.handlers === undefined) {
+        onFingersSpread.handlers = [];
+    }
+    onFingersSpread.handlers.push(f);
+}
+
 /** Called every frame for leap motion */
 function grabNewFrame() {
     var frame = control.frame();
     var oldestPointable = null;
+    
+    if(frame.pointables.length > 3) {
+        if(grabNewFrame.ticksTilSpread === undefined) {
+            grabNewFrame.ticksTilSpread = 50;
+        }
+        grabNewFrame.ticksTilSpread--;
+        if(grabNewFrame.ticksTilSpread === 0) {
+            if(onFingersSpread.handlers) {
+                onFingersSpread.handlers.forEach(function(handler) {
+                    handler.call(window);
+                });
+            }
+        }
+    } else {
+        delete grabNewFrame.ticksTilSpread;
+    }
     
     frame.pointables.forEach(function(pointable) {
         if (pointable != null) {

@@ -106,10 +106,12 @@ function PDollarRecognizer() // constructor
     )));
     */
     
-	this.PointClouds.push(new PointCloud("N", new Array(
-		new Point(0,100,1),new Point(0,0,1),
-		new Point(50,100,1),new Point(50,0,1)
+	this.PointClouds.push(new PointCloud("M", new Array(
+		new Point(0,100,1),new Point(0,0,1),new Point(40,50,1),new Point(80,0,1),new Point(80,100,1)
 	)));
+	this.PointClouds.push(new PointCloud("V", new Array(
+        new Point(0,0,1),new Point(35,100,1),new Point(70,0,1)
+    )));
 	/*
 	this.PointClouds.push(new PointCloud("F", new Array(
 		new Point(0,0,1),new Point(0,100,1),
