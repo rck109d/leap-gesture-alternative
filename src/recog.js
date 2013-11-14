@@ -27,13 +27,18 @@ function getScoreHistoriesToChart() {
     return c;
 }
 
-function addCircleElement(x, y) {
+function clapCircleRadius(r) {
+    return Math.min(Math.max(r, 10), 150);
+}
+
+function addCircleElement(x, y, r) {
     var c = document.createElement('div');
     c.setAttribute('class', 'circle');
-    c.style.width=circleRadius+'px';
-    c.style.height=circleRadius+'px';
-    c.style.left = x-circleRadius;
-    c.style.top = y-circleRadius;
+    r = clapCircleRadius(r);
+    c.style.width=2*r+'px';
+    c.style.height=2*r+'px';
+    c.style.left = x-r;
+    c.style.top = y-r;
     document.body.appendChild(c);
 }
 
@@ -45,15 +50,14 @@ function clearCircles() {
     var c = document.createElement('div');
     c.id = 'pointer';
     c.setAttribute('class', 'pointer');
-    c.style.width=circleRadius+'px';
-    c.style.height=circleRadius+'px';
-    c.style.backgroundColor="#ff0000";
+    c.style.width='10px';
+    c.style.height='10px';
     document.body.appendChild(c);
 })();
 
 function addCirclesForPoints(points, scale, translate) {
     $.each(points, function(i, p) {
-        addCircleElement(i,translate+p.X*scale,translate+p.Y*scale);
+        addCircleElement(i,translate+p.X*scale,translate+p.Y*scale, 10);
     });
 }
 
@@ -61,46 +65,57 @@ onNewFrame(function(tip) {
     if(tip) {
         var c = document.getElementById('pointer');
         var screenPos = leap2screen(tip);
-        c.style.left = screenPos[0]-circleRadius;
-        c.style.top = screenPos[1]-circleRadius;
-    }
-});
-
-onFingersSpread(function onSpread(bool) {
-    console.log('onSpread ' + bool)
-    if(bool &&!currentGesturePoints) {
-        currentGesturePoints = [];
-        clearCircles();
-    } else {
-        if(currentGesturePoints && currentGesturePoints.length>10) {
-            var scores = [];
-            var normalizedPoints = TranslateTo(Scale(Resample(currentGesturePoints, 32)), Origin);
-            $.each(recognizer.PointClouds, function(i) {
-                var cloud = recognizer.PointClouds[i];
-                var score = GreedyCloudMatch(normalizedPoints, cloud);
-                scores.push({name:cloud.Name, score:score});
-                addGestureScoreToHistory(cloud.Name, score);
-            });
-            if(plot) {
-                plot.destroy();
-            }
-            plot = $.jqplot ('chartdiv', getScoreHistoriesToChart(), {
-                legend: {
-                    renderer: $.jqplot.EnhancedLegendRenderer,
-                    show:true,
-                    labels:Object.keys(gestureScoreHistories)
-                }
-            });
-        }
-        currentGesturePoints = null;
+        var x = screenPos[0];
+        var y = screenPos[1];
+        var height = Math.max(1, tip[2]);
+        var xDif = (x-(document.body.clientWidth/2))/500 * height;
+        var yDif = (y-(document.body.clientHeight/2))/500 * height;
+        var radius = clapCircleRadius(tip[2]);
+        c.style.boxShadow = xDif+'px '+yDif+'px '+height+'px '+height+'px rgba(25, 25, 25, .3)';
+        c.style.left = x-radius;
+        c.style.top = y-radius;
+        c.style.width = 2*radius + 'px';
+        c.style.height = 2*radius + 'px';
     }
 });
 
 onNewFrame(function(tip) {
-    if (tip && currentGesturePoints) {
-        var screenPos = leap2screen(tip);
-        addCircleElement(screenPos[0], screenPos[1]);
-        currentGesturePoints.push({X:Math.round(screenPos[0]), Y:Math.round(screenPos[1]), ID:1});
+    if (tip) {
+        if(tip[2]<0) {
+            if(!currentGesturePoints) {
+                currentGesturePoints = [];
+                clearCircles();
+            }
+        } else {
+            if(currentGesturePoints) {
+                if(currentGesturePoints.length > 10) {
+                    var scores = [];
+                    var normalizedPoints = TranslateTo(Scale(Resample(currentGesturePoints, 32)), Origin);
+                    $.each(recognizer.PointClouds, function(i) {
+                        var cloud = recognizer.PointClouds[i];
+                        var score = GreedyCloudMatch(normalizedPoints, cloud);
+                        scores.push({name:cloud.Name, score:score});
+                        addGestureScoreToHistory(cloud.Name, score);
+                    });
+                    if(plot) {
+                        plot.destroy();
+                    }
+                    plot = $.jqplot ('chartdiv', getScoreHistoriesToChart(), {
+                        legend: {
+                            renderer: $.jqplot.EnhancedLegendRenderer,
+                            show:true,
+                            labels:Object.keys(gestureScoreHistories)
+                        }
+                    });
+                }
+                currentGesturePoints = null;
+            }
+        }
+        if(currentGesturePoints) {
+            var screenPos = leap2screen(tip);
+            addCircleElement(screenPos[0], screenPos[1], tip[2]);
+            currentGesturePoints.push({X:Math.round(screenPos[0]), Y:Math.round(screenPos[1]), ID:1});
+        }
     }
 });
 

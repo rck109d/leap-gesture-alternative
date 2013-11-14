@@ -92,34 +92,10 @@ function onNewFrame(f) {
     onNewFrame.handlers.push(f);
 }
 
-function onFingersSpread(f) {
-    if(onFingersSpread.handlers === undefined) {
-        onFingersSpread.handlers = [];
-    }
-    onFingersSpread.handlers.push(f);
-}
-
-function notifyFingersSpread(bool) {
-    if(onFingersSpread.handlers) {
-        onFingersSpread.handlers.forEach(function(handler) {
-            handler.call(window, bool);
-        });
-    }
-}
-
 /** Called every frame for leap motion */
 function grabNewFrame() {
     var frame = control.frame();
     var oldestPointable = null;
-    if(frame.hands.length > 1 && frame.pointables.length > 3) {
-        if(!grabNewFrame.wasSpread) {
-            notifyFingersSpread(true);
-            grabNewFrame.wasSpread = true;
-        }
-    } else if(grabNewFrame.wasSpread) {
-        notifyFingersSpread(false);
-        grabNewFrame.wasSpread = false;
-    }
     
     frame.pointables.forEach(function(pointable) {
         if (pointable) {
