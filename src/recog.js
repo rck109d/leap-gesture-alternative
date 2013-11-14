@@ -137,7 +137,7 @@ function onClickClearStrokes() {
 
 //var recognizer = new NDollarRecognizer(true);
 var recognizer = new PDollarRecognizer();
-var windowLimit = 200;
+var windowLimit = 100;
 var recogInterval = windowLimit / 40;
 var gestureScoreBar = 0.0;
 var circleRadius = 10;
@@ -148,6 +148,7 @@ $.each(recognizer.PointClouds, function(i, c) {
 });
 var gestureHistoryLimit = 20; // how many history items to keep per gesture
 var plot = null;
+var takingGesture = true;
 
 
 function addGestureScoreToHistory(name, score) {
@@ -168,8 +169,15 @@ function getScoreHistoriesToChart() {
 
 
 (function() {
+    var c = document.createElement('div');
+    c.id = 'pointer';
+    c.setAttribute('class', 'circle');
+    c.style.width=circleRadius+'px';
+    c.style.height=circleRadius+'px';
+    c.style.backgroundColor="#ff0000";
+    document.body.appendChild(c);
     for(var i=0;i<windowLimit;i++) {
-        var c = document.createElement('div');
+        c = document.createElement('div');
         c.id = 'circle_'+i;
         c.setAttribute('class', 'circle');
         c.style.width=circleRadius+'px';
@@ -214,16 +222,25 @@ function gConsoleAppend(str) {
     gConsole.scrollTop = gConsole.scrollHeight;
 }
 
+onNewFrame(function(tip) {
+    if(tip) {
+        var c = document.getElementById('pointer');
+        var screenPos = leap2screen(tip);
+        c.style.left = screenPos[0]-circleRadius;
+        c.style.top = screenPos[1]-circleRadius;
+    }
+})
+
+
 var recog = function recog(tip) {
-    if(!leapOn) {
+    if(!leapOn || !takingGesture) {
         return
     }
-    var status = "";
+
     if (tip) {
         var x=Math.round(tip[0]);
         var y=Math.round(tip[1]);
         var z=Math.round(tip[2]);
-        var status = x+'<br>'+y+'<br>'+z;
         var screenPos = leap2screen(tip);
         positionCircle(recog.frame!=null?(recog.frame++)%windowLimit:recog.frame=0, screenPos[0], screenPos[1]);
         var toPush = {X:Math.round(screenPos[0]), Y:Math.round(screenPos[1]), ID:1};
@@ -278,10 +295,7 @@ var recog = function recog(tip) {
                 */
             }
         }
-    } else {
-        status = 'no pointable';
     }
-    document.getElementById('status').innerHTML = status;
 };
 recog.window = [];
 
